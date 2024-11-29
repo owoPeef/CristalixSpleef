@@ -1,0 +1,4 @@
+name: Spleef
+version: '${version}'
+main: ru.peef.spleef.Spleef
+authors: [owoPeef]
