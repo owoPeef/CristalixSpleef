@@ -4,10 +4,13 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import lombok.Getter;
+import lombok.Setter;
 import org.bson.Document;
 import org.bukkit.entity.Player;
 import ru.peef.spleef.game.GameManager;
 import ru.peef.spleef.game.GamePlayer;
+import ru.peef.spleef.game.PlayerManager;
 
 import java.util.Date;
 import java.util.UUID;
@@ -21,7 +24,18 @@ public class Database {
     private final MongoCollection<Document> playerCollection;
     private final MongoCollection<Document> gamesCollection;
 
-    public Database() {
+    @Getter
+    @Setter
+    private GameManager gameManager;
+
+    @Getter
+    @Setter
+    private PlayerManager playerManager;
+
+    public Database(GameManager gameManager, PlayerManager playerManager) {
+        this.gameManager = gameManager;
+        this.playerManager = playerManager;
+
         MongoClient mongoClient = MongoClients.create(CONNECTION_STRING);
         MongoDatabase database = mongoClient.getDatabase(DATABASE_NAME);
 
@@ -30,8 +44,8 @@ public class Database {
     }
 
     public void recordGame() {
-        Document gameDoc = new Document("players_count", GameManager.getPlayers().size())
-                .append("start_timestamp", GameManager.getStartTimestamp())
+        Document gameDoc = new Document("players_count", playerManager.getPlayers().size())
+                .append("start_timestamp", gameManager.getStartTimestamp())
                 .append("end_timestamp", System.currentTimeMillis());
 
         gamesCollection.insertOne(gameDoc);

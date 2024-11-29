@@ -13,38 +13,38 @@ import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import ru.peef.spleef.game.GameManager;
-import ru.peef.spleef.game.GameStatus;
+import ru.peef.spleef.Spleef;
 
 public class EventListener implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
         event.setJoinMessage("");
-        GameManager.join(player);
+        Spleef.getPlayerManager().joinPlayer(player);
     }
 
     @EventHandler
     public void onPlayerLeave(PlayerQuitEvent event) {
         Player player = event.getPlayer();
         event.setQuitMessage("");
-        GameManager.leave(player);
+        Spleef.getPlayerManager().leavePlayer(player);
     }
 
     @EventHandler
     public void onPlayerMove(PlayerMoveEvent event) {
-        if (event.getTo().getY() <= 10 && GameManager.getStatus().equals(GameStatus.IN_PROGRESS))
-            GameManager.killPlayer(event.getPlayer());
+        if (event.getTo().getY() <= 10
+                && Spleef.getGameManager().getState().inProgress())
+            Spleef.getPlayerManager().killPlayer(event.getPlayer());
     }
 
     @EventHandler
     public void onBlockBreak(BlockBreakEvent event) {
         Block block = event.getBlock();
 
-        if (GameManager.getStatus().equals(GameStatus.IN_PROGRESS)
+        if (Spleef.getGameManager().getState().inProgress()
                 && block.getType().equals(Material.SNOW_BLOCK)
                 && event.getPlayer().getInventory().getItemInMainHand().getType().equals(Material.DIAMOND_SPADE)) {
-            GameManager.getBrokenBlocks().add(block);
+            Spleef.getMapManager().addBrokenBlock(block);
             event.setDropItems(false);
         } else {
             event.setCancelled(true);
