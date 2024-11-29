@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitScheduler;
+import ru.peef.spleef.Database;
 import ru.peef.spleef.Spleef;
 
 @Setter
@@ -21,10 +22,22 @@ public class GameManager {
     private World world;
 
     @Getter
-    private GameStateManager state;
+    private GameStateManager state = new GameStateManager();
+
+    @Getter
+    @Setter
+    private PlayerManager playerManager;
+
+    @Getter
+    @Setter
+    private Database database;
+
+    @Getter
+    @Setter
+    private MapManager mapManager;
 
     public void checkForStart() {
-        if (Spleef.getPlayerManager().getPlayers().size() >= getMaxPlayers()) {
+        if (getPlayerManager().getPlayers().size() >= getMaxPlayers()) {
             state.setStatus(GameStatus.STARTING);
             BukkitScheduler scheduler = Bukkit.getScheduler();
 
@@ -38,8 +51,8 @@ public class GameManager {
             state.setStatus(GameStatus.IN_PROGRESS);
             startTimestamp = System.currentTimeMillis();
 
-            for (int i = 0; i < Spleef.getPlayerManager().getPlayers().size(); i++) {
-                GamePlayer gamePlayer = Spleef.getPlayerManager().getPlayers().get(i);
+            for (int i = 0; i < getPlayerManager().getPlayers().size(); i++) {
+                GamePlayer gamePlayer = getPlayerManager().getPlayers().get(i);
                 Player player = gamePlayer.getPlayer();
 
                 player.sendTitle(ChatColor.YELLOW + (ChatColor.BOLD + "ИГРА НАЧАЛАСЬ"), ChatColor.AQUA + "Удачи", 5, 40, 5);
@@ -58,14 +71,14 @@ public class GameManager {
 
                 player.getInventory().setItem(0, shovel);
                 player.getInventory().setHeldItemSlot(0);
-                player.teleport(Spleef.getMapManager().getSpawns().get(i));
+                player.teleport(getMapManager().getSpawns().get(i));
             }
         }
     }
 
     public void checkForEnd() {
         if (state.inProgress()) {
-            int aliveCount = (int) Spleef.getPlayerManager().getPlayers().stream()
+            int aliveCount = (int) getPlayerManager().getPlayers().stream()
                     .filter(GamePlayer::isAlive).count();
 
             if (aliveCount <= 1) {
@@ -77,18 +90,18 @@ public class GameManager {
     private void endGame() {
         state.setStatus(GameStatus.END);
 
-        Spleef.getDatabase().recordGame();
+        getDatabase().recordGame();
 
-        Spleef.getPlayerManager().getPlayers().stream()
+        getPlayerManager().getPlayers().stream()
                 .filter(GamePlayer::isAlive)
                 .findFirst()
                 .ifPresent(winner -> {
                     Bukkit.broadcastMessage(ChatColor.GREEN + "==================\n" + ChatColor.YELLOW + (ChatColor.BOLD + "ИГРА ОКОНЧЕНА!\n") + ChatColor.AQUA + "Победитель: " + ChatColor.GOLD + winner.getPlayer().getName());
-                    Spleef.getDatabase().addWins(winner, 1);
+                    getDatabase().addWins(winner, 1);
                 });
 
         BukkitScheduler scheduler = Bukkit.getScheduler();
-        scheduler.runTaskLater(Spleef.getInstance(), Spleef.getMapManager()::restoreMap, 2 * 20L);
+        scheduler.runTaskLater(Spleef.getInstance(), getMapManager()::restoreMap, 2 * 20L);
     }
 
     public Location getSpawnLocation() {

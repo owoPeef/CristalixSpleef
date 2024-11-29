@@ -10,23 +10,23 @@ import ru.peef.spleef.listeners.EventListener;
 
 @Getter
 public class Spleef extends JavaPlugin {
-    @Getter
-    private static Database database;
-    @Getter
-    private static GameManager gameManager;
-    @Getter
-    private static MapManager mapManager;
-    @Getter
-    private static PlayerManager playerManager;
+    private Database database;
+    private GameManager gameManager;
+    private MapManager mapManager;
+    private PlayerManager playerManager;
 
     @Override
     public void onEnable() {
-        getServer().getPluginManager().registerEvents(new EventListener(), this);
-
         gameManager = new GameManager();
         playerManager = new PlayerManager(gameManager);
         database = new Database(gameManager, playerManager);
         mapManager = new MapManager(gameManager, playerManager);
+
+        gameManager.setPlayerManager(playerManager);
+        gameManager.setMapManager(mapManager);
+        gameManager.setDatabase(database);
+
+        getServer().getPluginManager().registerEvents(new EventListener(gameManager, playerManager, mapManager), this);
 
         gameManager.setWorld(getServer().getWorlds().get(0));
 

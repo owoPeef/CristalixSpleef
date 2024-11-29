@@ -29,7 +29,7 @@ public class PlayerManager {
         }
 
         GamePlayer gamePlayer = new GamePlayer(player);
-        Spleef.getDatabase().addPlayer(gamePlayer);
+        gameManager.getDatabase().addPlayer(gamePlayer);
 
         player.getInventory().clear();
         player.teleport(gameManager.getSpawnLocation());

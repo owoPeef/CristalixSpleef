@@ -1,5 +1,6 @@
 package ru.peef.spleef.listeners;
 
+import lombok.Getter;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -13,38 +14,51 @@ import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import ru.peef.spleef.Spleef;
+import ru.peef.spleef.game.GameManager;
+import ru.peef.spleef.game.MapManager;
+import ru.peef.spleef.game.PlayerManager;
 
+@Getter
 public class EventListener implements Listener {
+    private final GameManager gameManager;
+    private final MapManager mapManager;
+    private final PlayerManager playerManager;
+
+    public EventListener(GameManager gameManager, PlayerManager playerManager, MapManager mapManager) {
+        this.gameManager = gameManager;
+        this.playerManager = playerManager;
+        this.mapManager = mapManager;
+    }
+
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
         event.setJoinMessage("");
-        Spleef.getPlayerManager().joinPlayer(player);
+        getPlayerManager().joinPlayer(player);
     }
 
     @EventHandler
     public void onPlayerLeave(PlayerQuitEvent event) {
         Player player = event.getPlayer();
         event.setQuitMessage("");
-        Spleef.getPlayerManager().leavePlayer(player);
+        getPlayerManager().leavePlayer(player);
     }
 
     @EventHandler
     public void onPlayerMove(PlayerMoveEvent event) {
         if (event.getTo().getY() <= 10
-                && Spleef.getGameManager().getState().inProgress())
-            Spleef.getPlayerManager().killPlayer(event.getPlayer());
+                && getGameManager().getState().inProgress())
+            getPlayerManager().killPlayer(event.getPlayer());
     }
 
     @EventHandler
     public void onBlockBreak(BlockBreakEvent event) {
         Block block = event.getBlock();
 
-        if (Spleef.getGameManager().getState().inProgress()
+        if (getGameManager().getState().inProgress()
                 && block.getType().equals(Material.SNOW_BLOCK)
                 && event.getPlayer().getInventory().getItemInMainHand().getType().equals(Material.DIAMOND_SPADE)) {
-            Spleef.getMapManager().addBrokenBlock(block);
+            getMapManager().addBrokenBlock(block);
             event.setDropItems(false);
         } else {
             event.setCancelled(true);
